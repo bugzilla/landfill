@@ -29,8 +29,6 @@
       <td>[% install.contact FILTER html %]</td>
       <td><a href="mailto:[% install.mailto FILTER html %]">[% install.mailto FILTER html %]</a></td>
       <td>
-        <a href="installs.cgi?action=edit&amp;install=
-                 [%- install.install_id FILTER html %]">[Edit]</a>
         <a href="installs.cgi?action=del&amp;install=
                  [%- install.install_id FILTER html %]"
            onclick="return confirmDelete('[% install.name FILTER js %]')">[Delete]</a>
