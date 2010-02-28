@@ -37,7 +37,7 @@ foreach my $install(@$need_deleting) {
 sub delete_install {
     my $install = shift;
 
-    my (undef, $errors) = validate_install($install);
+    my (undef, $errors) = validate_install($install, { for_deletion => 1 });
     die(join("\n", @$errors)) if @$errors;
 
     my $name = $install->{name};

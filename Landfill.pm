@@ -207,6 +207,7 @@ sub validate_install {
             $values{$field} = '';
         }
     }
+
     if ($values{name} =~ /^(\w*)$/) {
         $values{name} = $1;
         my $exists = $dbh->selectrow_array(
@@ -217,7 +218,7 @@ sub validate_install {
                           . " has already been created using this interface.");
         }
 
-        if (-e "/var/www/html/$values{name}") {
+        if (!$opts->{for_deletion} and -e "/var/www/html/$values{name}") {
             push(@errors, "An installation with the name '$values{name}'"
                           . " already exists on the disk.");
         }
