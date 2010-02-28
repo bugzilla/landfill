@@ -1,0 +1,53 @@
+[% WRAPPER "global/wrapper.html.tmpl" 
+  title = "Add A New Install"
+%]
+
+<form method="POST" action="installs.cgi">
+  <input type="hidden" name="action" value="new">
+
+  <table id="add_install" class="standard_table">
+    <tr>
+      <th>Install Name:</th>
+      <td><input type="text" name="name" id="name" size="64"><br>
+        (Human readable but short)</td>
+    </tr>
+    <tr>
+      <th>Contact Name:</th>
+      <td><input type="text" name="contact" size="24"></td>
+    </tr>
+    <tr>
+      <th>Contact Email:</th>
+      <td><input type="text" name="mailto" size="64"></td>
+    </tr>
+    <tr>
+      <th>Landfill Username of Owner:</th>
+      <td><input type="text" name="user" size="12" maxlength="12"></td>
+    </tr>
+    <tr>
+      <th>Branch:</th>
+      <td>
+        <select name="branch" id="branch">
+          [% FOREACH branch = branches %]
+            <option>[% branch FILTER html %]</option>
+          [% END %]
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <th>Database:</th>
+      <td>
+        <select name="db" id="db">
+          <option value="Mysql">MySQL</option>
+          <option value="Pg">PostgreSQL</option>
+        </select>
+      </td>
+    </tr>
+
+    <tr>
+      <th>&nbsp;</th>
+      <td><input type="submit" value="Create Install"></td>
+    </tr>
+  </table>
+</form>
+
+[% END %]

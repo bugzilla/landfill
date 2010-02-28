@@ -1,0 +1,42 @@
+[% WRAPPER "global/wrapper.html.tmpl" 
+  title = "Current Installs"
+%]
+
+<script type="text/javascript">
+  function confirmDelete(install_name) {
+      return window.confirm(
+        "Are you sure that you want to delete the " + install_name 
+        + " install?");
+  }
+</script>
+
+<p><a href="installs.cgi?action=add">Add A New Install</a></p>
+
+<table id="installs" class="standard_table">
+  <thead>
+  <tr>
+    <th>Install Name</th>
+    <th>URL</th>
+    <th>Contact Name</th>
+    <th>Contact Email</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  [% FOREACH install = installs %]
+    <tr>
+      <td>[% install.name FILTER html %]</td>
+      <td><a href="[% install.url FILTER html %]">[% install.url FILTER html %]</a></td>
+      <td>[% install.contact FILTER html %]</td>
+      <td><a href="mailto:[% install.mailto FILTER html %]">[% install.mailto FILTER html %]</a></td>
+      <td>
+        <a href="installs.cgi?action=edit&amp;install=
+                 [%- install.install_id FILTER html %]">[Edit]</a>
+        <a href="installs.cgi?action=del&amp;install=
+                 [%- install.install_id FILTER html %]"
+           onclick="return confirmDelete('[% install.name FILTER js %]')">[Delete]</a>
+      </td>
+    </tr>
+  [% END %]
+</table>
+
+[% END %]

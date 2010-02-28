@@ -1,0 +1,12 @@
+AuthName "Landfill Admin"
+AuthType Basic
+AuthUserFile /var/www/html/tools/.htpasswd
+
+require valid-user
+
+<Files 'db_pass'>
+  deny from all
+</Files>
+<Files 'bin/*'>
+  deny from all
+</Files>

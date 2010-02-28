@@ -1,0 +1,8 @@
+[% WRAPPER global/wrapper.html.tmpl 
+  title = "Error"
+%]
+
+[% FOREACH error = errors %]
+  <p class="error">[% error FILTER html %]</p>
+[% END %]
+[% END %]
