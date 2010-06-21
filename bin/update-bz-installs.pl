@@ -65,11 +65,11 @@ sub create_install {
 
     my $name = $install->{name};
     print "Creating $name installation using $branch...\n";
+    my $clone_cmd = lc($install->{db}) . "clone";
+    system($clone_cmd, $source_db, "bugs_$name");
     my $repo = Landfill::BZR_REPO;
     my $dir = "/var/www/html/$name";
     system("bzr", "co", "$repo/$branch", $dir);
-    my $clone_cmd = lc($install->{db}) . "clone";
-    system($clone_cmd, $source_db, "bugs_$name");
 
     my $answers = answers($install);
     my $temp_fh = File::Temp->new();
