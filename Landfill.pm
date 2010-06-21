@@ -198,8 +198,14 @@ sub validate_install {
 
     my $dbh = Landfill->dbh;
 
-    my (%values, @errors);
-    foreach my $field (qw(name contact mailto user branch db)) {
+    my (%values, @errors, @fields);
+    if ($opts->{for_deletion}) {
+        @fields = qw(name);
+    }
+    else {
+        @fields = qw(name contact mailto user branch db);
+    }
+    foreach my $field (@fields) {
         $params->{$field} = '' if !defined $params->{$field};
         $values{$field} = trim($params->{$field});
         if ($values{$field} eq '') {
