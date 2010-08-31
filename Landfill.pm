@@ -51,6 +51,8 @@ $::SIG{PIPE} = 'IGNORE';
 $::SIG{__DIE__} = \&CGI::Carp::confess;
 
 use constant BZR_REPO => 'bzr://bzr.mozilla.org/bugzilla';
+use constant BZ_USER => 'landfill@landfill.bugzilla.org';
+use constant RC_PUBLIC => '6Lefs7wSAAAAANcNlkyg9ytkuaLK6R6UOVfreBFo';
 
 use constant TEMPLATE_CONFIG => {
     INCLUDE_PATH => ['template'],
@@ -91,6 +93,14 @@ sub init_page {
 }
 
 init_page();
+
+sub authorized {
+    # CLI scripts are always authorized.
+    if (!$ENV{GATEWAY_INTERFACE}) {
+        return 1;
+    }
+    return ($ENV{AUTH_TYPE} and $ENV{REMOTE_USER}) ? 1 : 0;
+}
 
 sub cgi {
     my $class = shift;
@@ -162,9 +172,11 @@ sub detaint_natural {
 }
 
 sub get_db_pass {
+    my ($pass_file) = @_;
+    $pass_file ||= 'db_pass';
     my $db_pass;
     my $path = dirname(__FILE__);
-    open(my $fh, '<', "$path/db_pass") or die "$path/db_pass: $!";
+    open(my $fh, '<', "$path/$pass_file") or die "$path/$pass_file: $!";
     $db_pass = <$fh>;
     chomp($db_pass);
     close($fh);
@@ -204,6 +216,12 @@ sub validate_install {
     }
     else {
         @fields = qw(name contact mailto user branch db);
+        if (!Landfill->authorized) {
+            $params->{name} = random_string();
+            $params->{contact} = 'Web User';
+            $params->{user} = 'webuser';
+            $params->{db} = 'Mysql';
+        }
     }
     foreach my $field (@fields) {
         $params->{$field} = '' if !defined $params->{$field};

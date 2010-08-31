@@ -1,12 +1,14 @@
-AuthName "Landfill Admin"
-AuthType Basic
-AuthUserFile /var/www/html/tools/.htpasswd
+deny from all
 
-require valid-user
+<FilesMatch (^$)|(^(index|installs|patches)\.cgi)>
+  AuthName "Landfill Admin"
+  AuthType Basic
+  AuthUserFile /var/www/html/tools/.htpasswd
 
-<Files 'db_pass'>
-  deny from all
-</Files>
-<Files 'bin/*'>
-  deny from all
+  require valid-user
+  allow from all
+</FilesMatch>
+
+<Files create.cgi>
+  allow from all
 </Files>

@@ -12,7 +12,9 @@ use Landfill;
 use Cwd;
 use Fcntl qw(LOCK_EX LOCK_UN);
 use File::Temp;
+use HTTP::Cookies;
 use IO::File;
+use XMLRPC::Lite;
 
 # Make sure only one of us is running at a time.
 my $lock = '/root/.makebzinstall_lock';
@@ -21,17 +23,18 @@ flock($lock_fh, LOCK_EX);
 END { flock($lock_fh, LOCK_UN) }
 
 my $dbh = Landfill->dbh;
-my $uncreated = $dbh->selectall_arrayref(
-    'SELECT * FROM installs WHERE created = 0', {Slice=>{}});
-
-foreach my $install (@$uncreated) {
-    create_install($install);
-}
 
 my $need_deleting = $dbh->selectall_arrayref(
-    'SELECT * FROM installs WHERE delete_me = 1', {Slice=>{}});
+    'SELECT * FROM installs 
+      WHERE delete_me = 1 OR delete_at < NOW()', {Slice=>{}});
 foreach my $install(@$need_deleting) {
     delete_install($install);
+}
+
+my $uncreated = $dbh->selectall_arrayref(
+    'SELECT * FROM installs WHERE created = 0', {Slice=>{}});
+foreach my $install (@$uncreated) {
+    create_install($install);
 }
 
 sub delete_install {
@@ -76,6 +79,10 @@ sub create_install {
     $temp_fh->autoflush(1);
     print $temp_fh $answers;
     my $temp_filename = $temp_fh->filename;
+
+    my $db_pass = Landfill::get_db_pass();
+    my $bz_pass = Landfill::get_db_pass('bz_pass');
+
     my $original_dir = cwd();
     chdir($dir) || die "$dir: $!";
 
@@ -89,9 +96,16 @@ sub create_install {
     fix_localconfig($install);
     # And set up the database
     system("./checksetup.pl $temp_filename");
+
+    if ($install->{delete_at}) {
+        make_admin($install, $bz_pass);
+        disable_all_bugmail($install, $db_pass);
+    }
+
     trick_taint($original_dir);
     chdir($original_dir) or warn "$original_dir: $!";
     system("find $dir -exec chown $install->{user} \{\} \\;");
+
     $dbh->do('UPDATE installs SET created = 1 WHERE install_id = ?',
              undef, $install->{install_id});
 }
@@ -134,6 +148,7 @@ sub answers {
 \$answer{'allow_attachment_display'} = 1;
 \$answer{'attachment_base'} = 'https://bug\%bugid\%.landfill.bugzilla.org/$name/';
 \$answer{'webdotbase'} = '/usr/bin/dot';
+\$answer{'use_mailer_queue'} = 0;
 
 \$answer{'ADMIN_EMAIL'}    = '$email';
 \$answer{'ADMIN_REALNAME'} = '$install->{contact}';
@@ -143,3 +158,48 @@ END
     return $answers;
 }
 
+sub make_admin {
+    my ($install, $bz_pass) = @_;
+
+    my $name = $install->{name};
+    my $url = "https://landfill.bugzilla.org/$name/";
+    my $rpc = xmlrpc_client($url);
+
+    my $as_user = Landfill::BZ_USER;
+    $rpc->call('User.login', 
+               { login => $as_user, password => $bz_pass });
+   
+    # Save the cookies in the cookie jar
+    $rpc->transport->cookie_jar->extract_cookies(
+        $rpc->transport->http_response);
+    $rpc->transport->cookie_jar->save;
+
+    # Create the user
+    my $admin = $install->{mailto};
+    $rpc->call('User.create', { email => $admin });
+    $rpc->call('User.logout');
+
+    # Make them an admin
+    system("./checksetup.pl", "-t", "--make-admin=$admin", "/dev/null");
+
+    $rpc->transport->get("https://landfill.bugzilla.org/$name/token.cgi" 
+                         . "?a=reqpw&loginname=$admin");
+}
+
+sub xmlrpc_client {
+    my ($url) = @_;
+    # A temporary cookie jar that isn't saved after the script closes.
+    my $cookie_jar = new HTTP::Cookies();
+    my $rpc        = new XMLRPC::Lite(proxy => "${url}xmlrpc.cgi");
+    $rpc->transport->cookie_jar($cookie_jar);
+    return $rpc;
+}
+
+sub disable_all_bugmail {
+    my ($install, $db_pass) = @_;
+    my $name = $install->{name};
+    my $db_name = "bugs_$name";
+    trick_taint($db_pass);
+    system("mysql", "--user=bugs", "--password=$db_pass", $db_name,
+           "--execute=UPDATE profiles SET disable_mail = 1");
+}

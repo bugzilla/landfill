@@ -1,0 +1,43 @@
+[% WRAPPER "global/wrapper.html.tmpl" 
+  title = "Create A Test Bugzilla Install"
+%]
+
+<p>This form lets you create a temporary Bugzilla installation
+  where you will be the admin, for testing purposes.</p>
+
+<form method="POST" action="create.cgi">
+  <input type="hidden" name="action" value="new">
+
+  <table id="add_install" class="standard_table">
+    <tr>
+      <th>Admin Email:</th>
+      <td>
+        <input type="text" name="mailto" size="64"><br>
+        This will be the login you use to access this Bugzilla
+        installation. You must be able to receive email at this
+        address.
+      </td>
+    </tr>
+    <tr>
+      <th>Bugzilla Version:</th>
+      <td>
+        <select name="branch" id="branch">
+          [% FOREACH branch = branches %]
+            <option>[% branch FILTER html %]</option>
+          [% END %]
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <th>Prove You're Human:</th>
+      <td>[% recaptcha %]</td>
+    </tr>
+
+    <tr>
+      <th>&nbsp;</th>
+      <td><input type="submit" value="Create Install"></td>
+    </tr>
+  </table>
+</form>
+
+[% END %]

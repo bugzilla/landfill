@@ -1,0 +1,30 @@
+[% WRAPPER "global/wrapper.html.tmpl" 
+  title = "Install Creation Scheduled"
+%]
+
+<p>Okay, we are creating your installation.</p>
+
+<p>In about 15 minutes, you will receive an email asking you to "reset your
+  password" for the new installation. That will let you know that your
+  installation is ready. You can use the "reset your password"
+  link in the email to set a password for your user account, and then log
+  in.</p>
+
+<p>When it is ready, your installation will be available at
+  <a href="[% url FILTER html %]">http://landfill.bugzilla.org[% url FILTER html %]</a>.</p>
+
+<p>Email notifications will be disabled for every user in the installation.
+  If you want to enable email notifications for certain users, you can
+  use the "Users" control panel in the "Administration" section after
+  you log in to Bugzilla.</p>
+
+<p>Your installation will be automatically deleted after 
+  <strong>7 days</strong>.</p>
+
+<p>If your installation does not get created correctly, please contact
+  <a href="mailto:webmaster&#64;bugzilla.org">webmaster&#64;bugzilla.org</a>.</p>
+
+<p>If you have general questions about Bugzilla, use the
+  <a href="http://www.bugzilla.org/support/">support resources</a>.</p>
+
+[% END %]

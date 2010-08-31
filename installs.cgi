@@ -36,7 +36,7 @@ sub page_default {
     my $template = Landfill->template;
     my $installs = $dbh->selectall_arrayref(
         'SELECT install_id, name, url, contact, mailto 
-           FROM installs ORDER BY name', {Slice=>{}});
+           FROM installs ORDER BY delete_at, name', {Slice=>{}});
     my %vars = ( installs => $installs );
     print $cgi->header();
     $template->process('installs/index.html.tmpl', \%vars) 

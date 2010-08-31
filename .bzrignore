@@ -1,2 +1,4 @@
 .htpasswd
 db_pass
+bz_pass
+recaptcha_private
