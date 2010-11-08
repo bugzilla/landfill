@@ -10,7 +10,7 @@
 # implied. See the License for the specific language governing
 # rights and limitations under the License.
 #
-# The Original Code is the Bugzilla Bug Tracking System.
+# The Original Code is the Landfill Tools System.
 #
 # The Initial Developer of the Original Code is Everything Solved, Inc.
 # Portions created by the Initial Developers are Copyright (C) 2010 the
