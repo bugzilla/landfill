@@ -157,12 +157,13 @@ sub template {
 ###############
 
 sub bzr_branches {
-    my $repo = BZR_REPO;
-    my $branch_list = `bzr branches $repo`;
-    my @branches = split("\n", $branch_list);
-    my @valid = reverse grep(/^\d+\.\d+/, @branches);
-    unshift(@valid, 'trunk');
-    return \@valid;
+    my $branch_file = 'bzr_branches';
+    my $path = dirname(__FILE__) . "/" . $branch_file;
+    open(my $fh, '<', $path) or die "$path: $!";
+    my @branches = <$fh>;
+    close($fh);
+    chomp($_) foreach @branches;
+    return \@branches;
 }
 
 sub detaint_natural {
