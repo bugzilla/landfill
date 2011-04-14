@@ -44,6 +44,7 @@ use CGI qw(-no_xhtml -oldstyle_urls :private_tempfiles :unique_headers -utf8);
 use DBI;
 use Email::Address;
 use File::Basename;
+use File::Copy qw(move);
 use Template;
 $| = 1;
 $::SIG{TERM} = 'IGNORE';
@@ -234,18 +235,26 @@ sub validate_install {
     }
 
     if ($values{name} =~ /^(\w*)$/) {
-        $values{name} = $1;
+        my $name = $values{name} = $1;
         my $exists = $dbh->selectrow_array(
-            'SELECT 1 FROM installs WHERE name = ?', undef, $values{name});
+            'SELECT 1 FROM installs WHERE name = ?', undef, $name);
 
         if ($exists and $opts->{check_exists}) {
-            push(@errors, "An installation with the name '$values{name}'"
+            push(@errors, "An installation with the name '$name'"
                           . " has already been created using this interface.");
         }
 
-        if (!$opts->{for_deletion} and -e "/var/www/html/$values{name}") {
-            push(@errors, "An installation with the name '$values{name}'"
+        if (!$opts->{for_deletion} and -e "/var/www/html/$name") {
+            push(@errors, "An installation with the name '$name'"
                           . " already exists on the disk.");
+            # It frequently happens that an install dies in the middle
+            # of creation and leaves behind only its on-disk piece.
+            # This handles that situation automatically.
+            if (!Landfill->authorized) {
+                move("/var/www/html/$name", "/var/www/html/archive/$name");
+                my $more_random = random_string();
+                $dbh->do("RENAME DATABASE $name TO ${name}_$more_random");
+            }
         }
 
         if ($values{name} =~ /_branch$/ or $values{name} =~ /^tip$/i) {
