@@ -147,12 +147,12 @@ sub fix_localconfig {
 
 sub answers {
     my $install = shift;
-    my $name = $install->{name};
-    my $email = $install->{mailto};
-    my $driver = $install->{db};
-    my $db_pass = Landfill::get_db_pass();
+    my $name = quotemeta($install->{name});
+    my $email = quotemeta($install->{mailto});
+    my $driver = quotemeta($install->{db});
+    my $db_pass = quotemeta(Landfill::get_db_pass());
 
-    my $random_pass = random_string();
+    my $random_pass = quotemeta(random_string());
 
     my $answers = <<END;
 \$answer{'db_name'}    = 'bugs_$name';
