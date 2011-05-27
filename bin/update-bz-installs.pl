@@ -96,11 +96,16 @@ sub create_install {
 
     my $name = $install->{name};
     print "Creating $name installation using $branch...\n";
+    # Check out the files before cloning the DB. We're most likely to die
+    # in the middle of cloning the DB, and clear_existing_install checks
+    # for the existence of this directory to know whether or not it's doing
+    # a "retry".
+    my $dir = "/var/www/html/$name";
+    my $repo = Landfill::BZR_REPO;
+    system("bzr", "co", "$repo/$branch", $dir);
+
     my $clone_cmd = lc($install->{db}) . "clone";
     system($clone_cmd, $source_db, "bugs_$name");
-    my $repo = Landfill::BZR_REPO;
-    my $dir = "/var/www/html/$name";
-    system("bzr", "co", "$repo/$branch", $dir);
 
     my $answers = answers($install);
     my $temp_fh = File::Temp->new();
