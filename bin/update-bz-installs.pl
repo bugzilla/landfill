@@ -61,6 +61,14 @@ foreach my $install (@$uncreated) {
 sub delete_install {
     my $install = shift;
 
+    do_remove_install($install);
+    Landfill->dbh->do('DELETE FROM installs WHERE install_id = ?', undef,
+                      $install->{install_id});
+}
+
+sub do_remove_install {
+    my $install = shift;
+
     my (undef, $errors) = validate_install($install, { for_deletion => 1 });
     die(join("\n", @$errors)) if @$errors;
 
@@ -69,13 +77,12 @@ sub delete_install {
     system("rm", "-rf", "/var/www/html/$name");
     my $drop_cmd = lc($install->{db}) . "drop";
     system($drop_cmd, "bugs_$name");
-    Landfill->dbh->do('DELETE FROM installs WHERE install_id = ?', undef,
-                      $install->{install_id});
 }
 
 sub create_install {
     my $install = shift;
 
+    clear_existing_install($install);
     my (undef, $errors) = validate_install($install);
     die(join("\n", @$errors)) if @$errors;
 
@@ -131,6 +138,20 @@ sub create_install {
              undef, $install->{install_id});
 }
 
+sub clear_existing_install {
+    my ($install) = @_;
+    my $name = $install->{name};
+    my $path = "/var/www/html/$name";
+
+    # It frequently happens that a create.cgi install dies in the middle
+    # of creation and leaves behind only its on-disk piece.
+    # This helps handle that situation automatically.
+    if (-d $path and $install->{user} eq 'webuser' and $name =~ /^[0-9A-Za-z]+$/) {
+        print STDERR "Removing existing installation $name...\n";
+        do_remove_install($install);
+    }
+}
+
 sub fix_localconfig {
     my $install = shift;
     my $branch = $install->{branch};
@@ -150,7 +171,8 @@ sub answers {
     my $name = quotemeta($install->{name});
     my $email = quotemeta($install->{mailto});
     my $driver = quotemeta($install->{db});
-    my $db_pass = quotemeta(Landfill::get_db_pass());
+    my $contact = quotemeta($install->{contact});
+    my $db_pass = Landfill::get_db_pass();
 
     my $random_pass = quotemeta(random_string());
 
@@ -172,7 +194,7 @@ sub answers {
 \$answer{'use_mailer_queue'} = 0;
 
 \$answer{'ADMIN_EMAIL'}    = '$email';
-\$answer{'ADMIN_REALNAME'} = '$install->{contact}';
+\$answer{'ADMIN_REALNAME'} = '$contact';
 \$answer{'ADMIN_PASSWORD'} = '$random_pass';
 \$answer{'NO_PAUSE'} = 1;
 END
