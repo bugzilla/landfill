@@ -177,31 +177,31 @@ sub answers {
     my $email = quotemeta($install->{mailto});
     my $driver = quotemeta($install->{db});
     my $contact = quotemeta($install->{contact});
-    my $db_pass = Landfill::get_db_pass();
+    my $db_pass = quotemeta(Landfill::get_db_pass());
 
     my $random_pass = quotemeta(random_string());
 
     my $answers = <<END;
-\$answer{'db_name'}    = 'bugs_$name';
-\$answer{'db_user'}    = 'bugs';
-\$answer{'db_pass'}    = '$db_pass';
-\$answers{'db_driver'} = '$driver';
+\$answer{"db_name"}    = "bugs_$name";
+\$answer{"db_user"}    = "bugs";
+\$answer{"db_pass"}    = "$db_pass";
+\$answers{"db_driver"} = "$driver";
 
-\$answer{'urlbase'}      = 'http://landfill.bugzilla.org/$name/';
-\$answer{'sslbase'}      = 'https://landfill.bugzilla.org/$name/';
-\$answer{'cookiepath'}   = '/$name/';
-\$answer{'ssl'}          = 'always';
-\$answer{'ssl_redirect'} = 1;
-\$answer{'maintainer'}   = '$email';
-\$answer{'allow_attachment_display'} = 1;
-\$answer{'attachment_base'} = 'https://bug\%bugid\%.landfill.bugzilla.org/$name/';
-\$answer{'webdotbase'} = '/usr/bin/dot';
-\$answer{'use_mailer_queue'} = 0;
+\$answer{"urlbase"}      = "http://landfill.bugzilla.org/$name/";
+\$answer{"sslbase"}      = "https://landfill.bugzilla.org/$name/";
+\$answer{"cookiepath"}   = "/$name/";
+\$answer{"ssl"}          = "always";
+\$answer{"ssl_redirect"} = 1;
+\$answer{"maintainer"}   = "$email";
+\$answer{"allow_attachment_display"} = 1;
+\$answer{"attachment_base"} = "https://bug\%bugid\%.landfill.bugzilla.org/$name/";
+\$answer{"webdotbase"} = "/usr/bin/dot";
+\$answer{"use_mailer_queue"} = 0;
 
-\$answer{'ADMIN_EMAIL'}    = '$email';
-\$answer{'ADMIN_REALNAME'} = '$contact';
-\$answer{'ADMIN_PASSWORD'} = '$random_pass';
-\$answer{'NO_PAUSE'} = 1;
+\$answer{"ADMIN_EMAIL"}    = "$email";
+\$answer{"ADMIN_REALNAME"} = "$contact";
+\$answer{"ADMIN_PASSWORD"} = "$random_pass";
+\$answer{"NO_PAUSE"} = 1;
 END
     return $answers;
 }
