@@ -53,6 +53,8 @@ $::SIG{__DIE__} = \&CGI::Carp::confess;
 use constant BZR_REPO => 'bzr://bzr.mozilla.org/bugzilla';
 use constant BZ_USER => 'landfill@landfill.bugzilla.org';
 use constant RC_PUBLIC => '6Lefs7wSAAAAANcNlkyg9ytkuaLK6R6UOVfreBFo';
+# We explicitly forbid these as a defense-in-depth against HTML injections.
+use constant FORBIDDEN_EMAIL_CHARACTERS => qr/[<>"&]/;
 
 use constant TEMPLATE_CONFIG => {
     INCLUDE_PATH => ['template'],
@@ -263,7 +265,10 @@ sub validate_install {
           or push(@errors, "'$values{user}' is not a valid landfill user.");
     }
 
-     if ($values{mailto} and $values{mailto} !~ $Email::Address::mailbox) {
+     if ($values{mailto} 
+         and ($values{mailto} !~ $Email::Address::mailbox
+              or $values{mailto} =~ FORBIDDEN_EMAIL_CHARACTERS))
+     {
          push(@errors, "'$values{mailto}' is not a valid email address.");
      }
 
