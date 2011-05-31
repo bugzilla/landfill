@@ -54,7 +54,7 @@ use constant BZR_REPO => 'bzr://bzr.mozilla.org/bugzilla';
 use constant BZ_USER => 'landfill@landfill.bugzilla.org';
 use constant RC_PUBLIC => '6Lefs7wSAAAAANcNlkyg9ytkuaLK6R6UOVfreBFo';
 # We explicitly forbid these as a defense-in-depth against HTML injections.
-use constant FORBIDDEN_EMAIL_CHARACTERS => qr/[<>"&]/;
+use constant FORBIDDEN_EMAIL_CHARACTERS => qr/[<>"&\s]/;
 
 use constant TEMPLATE_CONFIG => {
     INCLUDE_PATH => ['template'],
